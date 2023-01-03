@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>web socket 测试</title>
+</head>
+
+<body>
+    <div>
+        <input type="file" id="myimg" onchange="imgChange(this)" accept="image/png,image/gif,image/jpeg" />
+        <img width="300px" src="" alt="">
+        <br />
+        <div style="border: 1px solid #CCC;height: 300px;overflow: scroll" id="server-msg-container">
+
+        </div>
+        <h3>服务端返回的应答消息</h3>
+        
+        <textarea id="responseText" style="width: 1024px;height: 300px;"></textarea> <br />
+        <input type="text" id="message" value="这里输入消息" />
+        <input type="button" value="发送ws消息" onClick="send()" />
+    </div>
+    <script>
+        var socket;
+        if (!window.WebSocket) {
+            window.WebSocket = window.MozWebSocket;
+        }
+
+        var from = "4159c16b741041629eb7f07f3ef11111";
+        //var address = "ws://127.0.0.1:12006/chat";
+        var address = "ws://192.168.2.10:12005/chat";
+
+        if (window.WebSocket) {
+            var token='dcvuahsdnfajw12kjfasfsdf34'
+            socket = new WebSocket(address);
+
+            socket.onopen = function (event) {
+                var ta = document.getElementById('responseText');
+                ta.value = "Netty-WebSocket服务器。。。。。。连接  \r\n";
+                var loginMessage = "{\"type\":\"login\",\"userOpId\":\"" + from + "\"}";
+                socket.send(loginMessage);
+                var queryMessage = "{\"type\":\"queryAll\",\"userOpId\":\"" + from + "\",\"limit\":50, \"page\":1, \"startTime\":\"2021-06-01\", \"endTime\":\"2021-07-08\"}";
+                socket.send(queryMessage );
+            };
+
+            socket.onmessage = function (event) {
+                
+                if (typeof event.data === "string") {
+                    var ta = document.getElementById('responseText');
+                    ta.value += event.data + "\r\n";
+                    console.log('Client received a message', event);
+                } else {
+                    
+                    var inpMsg = document.getElementById("server-msg-container");
+                    var result = event.data;
+                    console.log(result);
+                    var flagReader = new FileReader();
+                    flagReader.readAsArrayBuffer(result);
+                    flagReader.onload = function () {
+                        var imageReader = new FileReader();
+                        imageReader.readAsDataURL(result);
+                        console.info("服务器返回的数据大小:", result.size);
+                        imageReader.onload = function (img) {
+                            var result = img.target.result;
+                            var src = result.replace("data:application/octet-stream;", "data:image/jpg;");
+                            console.log(src);
+                            var imgHtml = "<img src='" + src + "' style='width: 100px;height: 100px;'>";
+                            inpMsg.innerHTML += imgHtml  + "<br />"; 
+                            //inpMsg.innerHTML += imgHtml.replace("data:application/octet-stream;", "data:image/png;") + "<br />";
+                            inpMsg.scroll(inpMsg.scrollWidth, inpMsg.scrollHeight);
+                        };
+                    }
+                }
+
+
+            };
+
+
+            socket.onclose = function (event) {
+                var ta = document.getElementById('responseText');
+                ta.value = "Netty-WebSocket服务器。。。。。。关闭 \r\n";
+            };
+
+        } else {
+            alert("您的浏览器不支持WebSocket协议！");
+        }
+
+        function imgChange(img) {
+            // 生成一个文件读取的对象
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                // base64码
+                var imgFile = ev.target.result;//或e.target都是一样的
+                //这里就是base64了
+                document.querySelector("img").src = ev.target.result;
+                var result = ev.target.result;
+                var array = result.split(",");
+                array[1];
+                var p = "{\"sysNO\":\"xxxxx\",\"blob\":\"" + array[1] + "\"}";
+                //var blob = new Blob([p]);
+                var groupMessage = "{\"type\":\"group\",\"messageType\":\"image\",\"message\":\"" + array[1] + "\",\"from\":\"" + from + "\", \"to\":\"ff31f1d5611b4d6990aef9abde315abc\",\"createTime\":\"2020-01-01 00:00:00\",\"originalFilename\":\"wukong.jpg\", \"contentType\":\"image/jpeg\"}";
+                socket.send(groupMessage);
+
+            }
+            //发起异步读取文件请求，读取结果为data:url的字符串形式，
+            reader.readAsDataURL(img.files[0]);
+        }
+
+        function send() {
+
+            var message = document.getElementById('message');
+            if (!window.WebSocket) { return; }
+            if (socket.readyState == WebSocket.OPEN) {
+
+                var groupMessage = "{\"type\":\"group\",\"messageType\":\"text\",\"message\":\"" + message.value + "\",\"from\":\"" + from + "\", \"to\":\"ff31f1d5611b4d6990aef9abde315abc\",\"createTime\":\"2020-01-01 00:00:00\"}";
+                socket.send(groupMessage);
+            } else {
+                alert("WebSocket 连接没有建立成功！");
+            }
+
+        }
+
+
+
+
+
+    </script>
+</body>
+
+</html>

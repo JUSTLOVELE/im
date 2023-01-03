@@ -1,0 +1,46 @@
+spring:
+  mvc:
+    date-format: yyyy-MM-dd
+  application:
+    name: IMServer
+  data:
+    mongodb:
+      #uri: mongodb://hy_gs:jkkj@127.0.0.1:27017/HY_GS?authSource=admin&authMechanism=SCRAM-SHA-1
+      database: HY_GS
+      host: 192.168.31.123
+      port: 27017
+      username: hy_gs
+      password: jkkj
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.31.123:3306/hy_gs?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2b8
+    username: hy_hygs
+    password: hyabc123456
+    dbcp2:
+      min-idle: 3
+      initial-size: 3
+      max-total: 20
+      max-wait-millis: 333
+
+server:
+  port: 12005
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    context-path: /IMServer
+    session:
+      timneout: 3000
+
+logging:
+  path: D:\\application\\im_server\\logs
+  level:
+    root: info
+
+projectconfig:
+  encryptKey: hykjhykjhykjhykjhykjhykj
+  miniourl: https://pfk.hsfyyy.com/
+  minioaccesskey: minioadmin
+  miniosecretkey: minioadmin
+  miniobucketname: imfileserver
+  minioport: 9000
+  minioip: 192.168.31.123
